@@ -37,6 +37,9 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
+//Please keep it to config folder!
+
 #ifndef CUSTOM_BOARD_H
 #define CUSTOM_BOARD_H
 

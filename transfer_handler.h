@@ -18,14 +18,15 @@ typedef enum
 #define digitalRead(_pin) 						nrf_gpio_pin_read(_pin)
 void pinMode(int _pin, pin_mode_t _mode);
 
-#define delay(_ms) nrf_delay_ms(_ms)
+#define delay(_ms) 										nrf_delay_ms(_ms)
+#define delayMicroseconds(_us) 				nrf_delay_us(_us)
 
 
 #define DEBUG
 
 #ifdef DEBUG
 	#include "nrf_log.h"
-	#define Debug(__info,...) NRF_LOG_INFO("Debug: " __info,##__VA_ARGS__)//printf()
+	#define Debug(__info,...) NRF_LOG_INFO(__info,##__VA_ARGS__)//printf()
 #else
 	#define Debug(__info,...)  
 #endif
@@ -39,9 +40,9 @@ void pinMode(int _pin, pin_mode_t _mode);
 
 #ifdef USE_IIC
 
-	void twi_init(void);
-	void twi_readRegisters(uint8_t addr, uint8_t reg, uint8_t *buffer, uint8_t len);
-	void twi_writeRegisters(uint8_t addr, uint8_t reg, uint8_t *buffer, uint8_t len);
+	void iic_init(void);
+	void iic_send(uint8_t addr, uint8_t *buffer, uint8_t len, bool no_stop);
+	void iic_read(uint8_t addr, uint8_t *buffer, uint8_t len);
 
 #endif
 
