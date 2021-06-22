@@ -14,6 +14,9 @@ typedef enum
     INPUT_PULLDOWN
 } pin_mode_t;
 
+#define LOW 0
+#define HIGH 1
+
 #define digitalWrite(_pin, _value) 		nrf_gpio_pin_write(_pin, _value)
 #define digitalRead(_pin) 						nrf_gpio_pin_read(_pin)
 void pinMode(int _pin, pin_mode_t _mode);
@@ -34,7 +37,7 @@ void pinMode(int _pin, pin_mode_t _mode);
 #ifdef USE_SPI
 
 	void spi_init(void);
-	void spi_transfer(const uint8_t *p_tx_buffer, uint8_t tx_length, uint8_t *p_rx_buffer, uint8_t rx_length);
+	void spi_transfer(const uint8_t *p_tx_buffer, uint8_t tx_length, uint8_t *p_rx_buffer, uint8_t rx_length); //rx length begins from the first byte!
 
 #endif
 
