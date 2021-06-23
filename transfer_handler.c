@@ -82,6 +82,8 @@ void spi_send(const uint8_t *p_tx_buffer, uint8_t tx_length)
 
 #include "nrf_drv_twi.h"
 
+bool iic_initialized = false;
+
 /* Indicates if operation on TWI has ended. */
 static volatile bool twi_xfer_done = false;
 #define TWI_INSTANCE_ID     0
@@ -120,19 +122,25 @@ static void twi_handler(nrf_drv_twi_evt_t const *p_event, void *p_context)
 void iic_init(void)
 {
 	ret_code_t err_code;
+	
+	if(!iic_initialized)
+	{
+		const nrf_drv_twi_config_t twi_afe_config = {
+				.scl = IIC_SCL,
+				.sda = IIC_SDA,
+				.frequency = NRF_DRV_TWI_FREQ_400K,
+				.interrupt_priority = APP_IRQ_PRIORITY_HIGH,
+				.clear_bus_init = true
+			};
 
-	const nrf_drv_twi_config_t twi_afe_config = {
-		.scl = IIC_SCL,
-		.sda = IIC_SDA,
-		.frequency = NRF_DRV_TWI_FREQ_400K,
-		.interrupt_priority = APP_IRQ_PRIORITY_HIGH,
-		.clear_bus_init = true
-	};
+			err_code = nrf_drv_twi_init(&m_twi, &twi_afe_config, twi_handler, NULL);
+			APP_ERROR_CHECK(err_code);
 
-	err_code = nrf_drv_twi_init(&m_twi, &twi_afe_config, twi_handler, NULL);
-	APP_ERROR_CHECK(err_code);
-
-	nrf_drv_twi_enable(&m_twi);
+			nrf_drv_twi_enable(&m_twi);
+	}
+	
+	iic_initialized = true;
+	
 }
 
 void iic_send(uint8_t addr, uint8_t *buffer, uint8_t len, bool no_stop)
