@@ -49,4 +49,10 @@ void pinMode(int _pin, pin_mode_t _mode);
 
 #endif
 
+#ifdef USE_UART
+
+    void uart_init(void);
+    
+#endif
+
 #endif
