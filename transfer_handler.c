@@ -129,10 +129,12 @@ void iic_init(void)
 		const nrf_drv_twi_config_t twi_afe_config = {
 				.scl = IIC_SCL,
 				.sda = IIC_SDA,
-				.frequency = NRF_DRV_TWI_FREQ_400K,
+				.frequency = NRF_DRV_TWI_FREQ_100K,
 				.interrupt_priority = APP_IRQ_PRIORITY_HIGH,
 				.clear_bus_init = true
 			};
+        
+            
 
 			err_code = nrf_drv_twi_init(&m_twi, &twi_afe_config, twi_handler, NULL);
 			APP_ERROR_CHECK(err_code);
@@ -177,36 +179,46 @@ void iic_read(uint8_t addr, uint8_t *buffer, uint8_t len)
 static uint8_t     rx_buf[128];                                                  
 static uint8_t     tx_buf[128]; 
 
+bool uart_initialized = false;
+
 void uart_event_handle(app_uart_evt_t *p_event);
 
 void uart_init(void)
 {
-    ret_code_t err_code;
-    app_uart_comm_params_t const bmd101_comm_params =
-	{
-			.rx_pin_no    = BMD101_TX,
-			.tx_pin_no    = UART_PIN_DISCONNECTED,
-			.rts_pin_no   = UART_PIN_DISCONNECTED,
-			.cts_pin_no   = UART_PIN_DISCONNECTED,
-			.flow_control = APP_UART_FLOW_CONTROL_DISABLED,
-			.use_parity   = false,
-			.baud_rate    = NRF_UART_BAUDRATE_57600
-	};
-	
-	app_uart_buffers_t buffers = {
-	
-			.rx_buf      = rx_buf,                                                            
-			.rx_buf_size = sizeof (rx_buf),                                                
-			.tx_buf      = tx_buf,                 
-			.tx_buf_size = sizeof (tx_buf)
-	
-	};
-	
-	err_code = app_uart_init(&bmd101_comm_params, &buffers, uart_event_handle, APP_IRQ_PRIORITY_LOWEST);
-	
-	APP_ERROR_CHECK(err_code);
-
-
+    
+    if(!uart_initialized)
+    {
+        ret_code_t err_code;
+        app_uart_comm_params_t const bmd101_comm_params =
+        {
+                .rx_pin_no    = UART_SENSOR_TX,
+                .tx_pin_no    = UART_PIN_DISCONNECTED,
+                .rts_pin_no   = UART_PIN_DISCONNECTED,
+                .cts_pin_no   = UART_PIN_DISCONNECTED,
+                .flow_control = APP_UART_FLOW_CONTROL_DISABLED,
+                .use_parity   = false,
+                .baud_rate    = NRF_UART_BAUDRATE_57600
+        };
+        
+        app_uart_buffers_t buffers = {
+        
+                .rx_buf      = rx_buf,                                                            
+                .rx_buf_size = sizeof (rx_buf),                                                
+                .tx_buf      = tx_buf,                 
+                .tx_buf_size = sizeof (tx_buf)
+        
+        };
+        
+        err_code = app_uart_init(&bmd101_comm_params, &buffers, uart_event_handle, APP_IRQ_PRIORITY_HIGHEST);
+        
+        APP_ERROR_CHECK(err_code);
+        
+        Debug("UART OK");
+        
+    }
+    
+    uart_initialized = true;
+    
 }
 
 #endif
