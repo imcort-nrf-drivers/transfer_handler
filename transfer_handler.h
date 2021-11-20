@@ -8,22 +8,30 @@
 
 typedef enum
 {
-		OUTPUT,
+    OUTPUT,
     INPUT,
     INPUT_PULLUP,
     INPUT_PULLDOWN
 } pin_mode_t;
 
+typedef enum
+{
+    LOW,
+    CHANGE,
+    RISING,
+    FALLING
+} int_mode_t;
+
 #define LOW 0
 #define HIGH 1
 
-#define digitalWrite(_pin, _value) 		nrf_gpio_pin_write(_pin, _value)
-#define digitalRead(_pin) 						nrf_gpio_pin_read(_pin)
-void pinMode(int _pin, pin_mode_t _mode);
-
-#define delay(_ms) 										nrf_delay_ms(_ms)
+#define digitalWrite(_pin, _value)          nrf_gpio_pin_write(_pin, _value)
+#define digitalRead(_pin)                   nrf_gpio_pin_read(_pin)
+#define delay(_ms)                          nrf_delay_ms(_ms)
 #define delayMicroseconds(_us) 				nrf_delay_us(_us)
 
+void pinMode(int _pin, pin_mode_t _mode);
+void attachInterrupt(int _pin, void* _func, int_mode_t _mode);
 
 #define DEBUG
 

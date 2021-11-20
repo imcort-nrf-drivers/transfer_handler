@@ -20,6 +20,52 @@ void pinMode(int _pin, pin_mode_t _mode)
     }
 }
 
+#include "nrf_drv_gpiote.h"
+
+bool gpiote_init = false;
+
+void attachInterrupt(int _pin, void* _func, int_mode_t _mode)
+{
+    ret_code_t err_code;
+    
+    if(!gpiote_init)
+    {
+        err_code = nrf_drv_gpiote_init();
+        APP_ERROR_CHECK(err_code);
+    }
+    
+    nrf_drv_gpiote_in_config_t in_config = 
+    {                                                   \
+        .sense = NRF_GPIOTE_POLARITY_HITOLO,            \
+        .pull = NRF_GPIO_PIN_NOPULL,                    \
+        .is_watcher = false,                            \
+        .hi_accuracy = true,                         \
+        .skip_gpio_setup = false,                       \
+    };  
+    
+    switch(_mode)
+    {
+        case LOW:
+        case FALLING:
+            in_config.sense = NRF_GPIOTE_POLARITY_HITOLO;
+            in_config.pull = NRF_GPIO_PIN_PULLUP;
+            break;
+        case RISING:
+            in_config.sense = NRF_GPIOTE_POLARITY_LOTOHI;
+            in_config.pull = NRF_GPIO_PIN_PULLDOWN;
+            break;
+        case CHANGE:
+            in_config.sense = NRF_GPIOTE_POLARITY_TOGGLE;
+            break;
+    
+    }
+    
+    err_code = nrf_drv_gpiote_in_init(_pin, &in_config, _func);
+    APP_ERROR_CHECK(err_code);
+
+    nrf_drv_gpiote_in_event_enable(_pin, true);
+}
+
 #ifdef USE_SPI
 
 #include "nrf_drv_spi.h"
