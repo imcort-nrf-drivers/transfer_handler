@@ -20,6 +20,8 @@ void pinMode(int _pin, pin_mode_t _mode)
     }
 }
 
+#ifdef USE_INTERRUPT
+
 #include "nrf_drv_gpiote.h"
 
 bool gpiote_init = false;
@@ -65,6 +67,7 @@ void attachInterrupt(int _pin, void* _func, int_mode_t _mode)
 
     nrf_drv_gpiote_in_event_enable(_pin, true);
 }
+#endif
 
 #ifdef USE_SPI
 
