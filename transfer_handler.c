@@ -1,5 +1,8 @@
 #include "transfer_handler.h"
+
+#ifdef SOFTDEVICE_PRESENT 
 #include "nrf_pwr_mgmt.h"
+#endif
 
 void pinMode(int _pin, pin_mode_t _mode)
 {
@@ -92,14 +95,14 @@ static nrf_drv_spi_config_t spi_config = {                                      
     .irq_priority = SPI_DEFAULT_CONFIG_IRQ_PRIORITY,         \
     .orc          = 0xFF,                                    \
     .frequency    = NRF_DRV_SPI_FREQ_8M,                     \
-    .mode         = NRF_DRV_SPI_MODE_3,                      \
+    .mode         = NRF_DRV_SPI_MODE_0,                      \
     .bit_order    = NRF_DRV_SPI_BIT_ORDER_MSB_FIRST,         \
 };
 
 void spi_init(void)
 {
 
-    APP_ERROR_CHECK(nrf_drv_spi_init(&spi, &spi_config, spi_event_handler, NULL));
+    APP_ERROR_CHECK(nrf_drv_spi_init(&spi, &spi_config, NULL, NULL));
 	
 }
 
@@ -108,7 +111,12 @@ void spi_transfer(const uint8_t *p_tx_buffer, uint8_t tx_length, uint8_t *p_rx_b
     //memcpy(spi_buf, p_tx_buffer, tx_length);
     spi_xfer_done = false;
     nrf_drv_spi_transfer(&spi, p_tx_buffer, tx_length, p_rx_buffer, rx_length);
-    while(!spi_xfer_done) nrf_pwr_mgmt_run();
+//    while(!spi_xfer_done) 
+//    #ifdef SOFTDEVICE_PRESENT 
+//        nrf_pwr_mgmt_run();
+//    #else
+//        __WFE();
+//    #endif 
     //memcpy(p_rx_buffer, (spi_buf + tx_length), rx_length);
 	
 }
@@ -118,10 +126,20 @@ void spi_send(const uint8_t *p_tx_buffer, uint8_t tx_length)
     Debug("SPI Send %d", tx_length);
     spi_xfer_done = false;
     nrf_drv_spi_transfer(&spi, p_tx_buffer, tx_length > 255 ? 255 : tx_length, NULL, 0);
-    while(!spi_xfer_done) nrf_pwr_mgmt_run();
+//    while(!spi_xfer_done) 
+//        
+//    #ifdef SOFTDEVICE_PRESENT 
+//        nrf_pwr_mgmt_run();
+//    #else
+//        __WFE();
+//    #endif 
     
     if(tx_length > 255)
+    {
+        Debug("SPI Send again %d", tx_length - 255);
         spi_send(p_tx_buffer + 255, tx_length - 255);
+    }
+        
     
 }
 
@@ -202,7 +220,13 @@ void iic_send(uint8_t addr, uint8_t *buffer, uint8_t len, bool no_stop)
 	twi_xfer_done = false;
 	err_code = nrf_drv_twi_tx(&m_twi, addr, buffer, len, no_stop);
 	APP_ERROR_CHECK(err_code);
-	while (twi_xfer_done == false) nrf_pwr_mgmt_run();
+	while (twi_xfer_done == false) 
+    #ifdef SOFTDEVICE_PRESENT 
+        nrf_pwr_mgmt_run();
+    #else
+        __WFE();
+    #endif    
+    
 
 }
 
@@ -213,7 +237,12 @@ void iic_read(uint8_t addr, uint8_t *buffer, uint8_t len)
 	twi_xfer_done = false;
 	err_code = nrf_drv_twi_rx(&m_twi, addr, buffer, len);
 	APP_ERROR_CHECK(err_code);
-	while (twi_xfer_done == false) nrf_pwr_mgmt_run();
+	while (twi_xfer_done == false) 
+    #ifdef SOFTDEVICE_PRESENT 
+        nrf_pwr_mgmt_run();
+    #else
+        __WFE();
+    #endif 
 
 }
 
