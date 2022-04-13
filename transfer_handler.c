@@ -72,6 +72,37 @@ void attachInterrupt(int _pin, void* _func, int_mode_t _mode)
 }
 #endif
 
+#ifdef USE_PWM
+
+#include "app_pwm.h"
+
+APP_PWM_INSTANCE(PWM1,1);
+
+void pwm_init(int pin)
+{
+    ret_code_t err_code;
+    /* 2-channel PWM, 200Hz, output on DK LED pins. */
+    app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_1CH(5000L, pin);
+
+    /* Switch the polarity of the second channel. */
+    pwm1_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
+
+    /* Initialize and enable PWM. */
+    err_code = app_pwm_init(&PWM1, &pwm1_cfg, NULL);
+    APP_ERROR_CHECK(err_code);
+    app_pwm_enable(&PWM1);
+
+}
+
+void pwm_set(uint16_t duty)
+{
+    
+    app_pwm_channel_duty_set(&PWM1, 0, duty);
+
+}
+
+#endif
+
 #ifdef USE_SPI
 
 #include "nrf_drv_spi.h"

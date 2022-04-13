@@ -33,6 +33,9 @@ typedef enum
 void pinMode(int _pin, pin_mode_t _mode);
 void attachInterrupt(int _pin, void* _func, int_mode_t _mode);
 
+void pwm_init(int pin);
+void pwm_set(uint16_t duty);
+
 #define DEBUG
 
 #ifdef DEBUG
