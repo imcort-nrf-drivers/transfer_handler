@@ -48,7 +48,7 @@ void attachInterrupt(int _pin, void* _func, int_mode_t _mode);
 
 	void spi_init(void);
 	void spi_transfer(const uint8_t *p_tx_buffer, uint8_t tx_length, uint8_t *p_rx_buffer, uint8_t rx_length); //rx length begins from the first byte!
-    void spi_send(const uint8_t *p_tx_buffer, uint8_t tx_length);
+    void spi_send(const uint8_t *p_tx_buffer, int32_t tx_length);
 #endif
 
 #ifdef USE_IIC

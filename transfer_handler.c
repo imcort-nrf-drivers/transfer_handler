@@ -102,7 +102,7 @@ static nrf_drv_spi_config_t spi_config = {                                      
 void spi_init(void)
 {
 
-    APP_ERROR_CHECK(nrf_drv_spi_init(&spi, &spi_config, NULL, NULL));
+    APP_ERROR_CHECK(nrf_drv_spi_init(&spi, &spi_config, spi_event_handler, NULL));
 	
 }
 
@@ -111,35 +111,36 @@ void spi_transfer(const uint8_t *p_tx_buffer, uint8_t tx_length, uint8_t *p_rx_b
     //memcpy(spi_buf, p_tx_buffer, tx_length);
     spi_xfer_done = false;
     nrf_drv_spi_transfer(&spi, p_tx_buffer, tx_length, p_rx_buffer, rx_length);
-//    while(!spi_xfer_done) 
-//    #ifdef SOFTDEVICE_PRESENT 
-//        nrf_pwr_mgmt_run();
-//    #else
-//        __WFE();
-//    #endif 
+    while(!spi_xfer_done) 
+    #ifdef SOFTDEVICE_PRESENT 
+        nrf_pwr_mgmt_run();
+    #else
+        __WFE();
+    #endif 
     //memcpy(p_rx_buffer, (spi_buf + tx_length), rx_length);
 	
 }
 
-void spi_send(const uint8_t *p_tx_buffer, uint8_t tx_length)
+void spi_send(const uint8_t *p_tx_buffer, int32_t tx_length)
 {
-    Debug("SPI Send %d", tx_length);
-    spi_xfer_done = false;
-    nrf_drv_spi_transfer(&spi, p_tx_buffer, tx_length > 255 ? 255 : tx_length, NULL, 0);
-//    while(!spi_xfer_done) 
-//        
-//    #ifdef SOFTDEVICE_PRESENT 
-//        nrf_pwr_mgmt_run();
-//    #else
-//        __WFE();
-//    #endif 
+
+    int32_t shift = 0;
     
-    if(tx_length > 255)
+    while (tx_length > 0)
     {
-        Debug("SPI Send again %d", tx_length - 255);
-        spi_send(p_tx_buffer + 255, tx_length - 255);
-    }
         
+        spi_xfer_done = false;
+        nrf_drv_spi_transfer(&spi, p_tx_buffer + shift, tx_length > 200 ? 200 : tx_length, NULL, 0);
+        while(!spi_xfer_done) 
+        #ifdef SOFTDEVICE_PRESENT 
+            nrf_pwr_mgmt_run();
+        #else
+            __WFE();
+        #endif 
+        tx_length = tx_length - 200;
+        shift = shift + 200;
+        
+    }
     
 }
 
