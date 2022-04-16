@@ -64,6 +64,9 @@ void pwm_set(uint16_t duty);
 
 #ifdef USE_UART
 
+#include "nrf_uart.h"
+#include "app_uart.h"
+
     void uart_init(void);
     
 #endif

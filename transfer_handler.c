@@ -113,6 +113,8 @@ static const nrf_drv_spi_t spi = NRF_DRV_SPI_INSTANCE(SPI_INSTANCE);  /**< SPI i
 static volatile bool spi_xfer_done = false;
 //static uint8_t spi_buf[255];
 
+bool spi_initialized = false;
+
 static void spi_event_handler(nrf_drv_spi_evt_t const * p_event, void * p_context)
 {
     spi_xfer_done = true;
@@ -132,8 +134,12 @@ static nrf_drv_spi_config_t spi_config = {                                      
 
 void spi_init(void)
 {
-
-    APP_ERROR_CHECK(nrf_drv_spi_init(&spi, &spi_config, spi_event_handler, NULL));
+    if(!spi_initialized)
+	{
+        APP_ERROR_CHECK(nrf_drv_spi_init(&spi, &spi_config, spi_event_handler, NULL));
+    }
+    
+    spi_initialized = true;
 	
 }
 
@@ -283,15 +289,11 @@ void iic_read(uint8_t addr, uint8_t *buffer, uint8_t len)
 
 #ifdef USE_UART
 
-#include "nrf_uart.h"
-#include "app_uart.h"
-
-static uint8_t     rx_buf[128];                                                  
-static uint8_t     tx_buf[128]; 
+#define UART_BUF_SIZE 128   
 
 bool uart_initialized = false;
 
-void uart_event_handle(app_uart_evt_t *p_event);
+void uart_event_handle(app_uart_evt_t * p_event);
 
 void uart_init(void)
 {
@@ -299,31 +301,27 @@ void uart_init(void)
     if(!uart_initialized)
     {
         ret_code_t err_code;
-        app_uart_comm_params_t const bmd101_comm_params =
+        app_uart_comm_params_t const uart_comm_params =
         {
                 .rx_pin_no    = UART_SENSOR_TX,
-                .tx_pin_no    = UART_PIN_DISCONNECTED,
+                .tx_pin_no    = UART_SENSOR_RX,
                 .rts_pin_no   = UART_PIN_DISCONNECTED,
                 .cts_pin_no   = UART_PIN_DISCONNECTED,
                 .flow_control = APP_UART_FLOW_CONTROL_DISABLED,
                 .use_parity   = false,
-                .baud_rate    = NRF_UART_BAUDRATE_57600
+                .baud_rate    = NRF_UART_BAUDRATE_9600
         };
         
-        app_uart_buffers_t buffers = {
-        
-                .rx_buf      = rx_buf,                                                            
-                .rx_buf_size = sizeof (rx_buf),                                                
-                .tx_buf      = tx_buf,                 
-                .tx_buf_size = sizeof (tx_buf)
-        
-        };
-        
-        err_code = app_uart_init(&bmd101_comm_params, &buffers, uart_event_handle, APP_IRQ_PRIORITY_HIGHEST);
+        APP_UART_FIFO_INIT(&uart_comm_params,
+                   UART_BUF_SIZE,
+                   UART_BUF_SIZE,
+                   uart_event_handle,
+                   APP_IRQ_PRIORITY_LOWEST,
+                   err_code);
         
         APP_ERROR_CHECK(err_code);
         
-        Debug("UART OK");
+        Debug("UART INIT OK");
         
     }
     
